@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'settings_page.dart';
 
 class HomePage extends StatelessWidget {
+  final String url;
   final controller = TextEditingController();
 
-  HomePage({Key? key}) : super(key: key);
+  HomePage({
+    Key? key,
+    required this.url,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +45,6 @@ class HomePage extends StatelessWidget {
             ElevatedButton(
               onPressed: () async {
                 try {
-                  final box = Hive.box(SettingsPage.keySettings);
-                  final url = box.get(SettingsPage.keyAppScriptUrl);
                   http.post(Uri.parse("$url?id=${controller.text}"));
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(

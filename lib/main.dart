@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'pages/onboarding_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/home_page.dart';
 import 'theme.dart';
@@ -20,7 +21,15 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'TAP',
       theme: theme,
-      home: HomePage(),
+      home: ValueListenableBuilder<Box>(
+        valueListenable: Hive.box(SettingsPage.keySettings).listenable(),
+        builder: (context, box, widget) {
+          final url = box.get(SettingsPage.keyAppScriptUrl) as String?;
+          return url == null || url.isEmpty
+              ? const OnboardingPage()
+              : HomePage(url: url);
+        },
+      ),
     );
   }
 }
