@@ -20,7 +20,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'TAP',
       theme: theme,
-      home: const HomePage(),
+      home: HomePage(),
     );
   }
 }
