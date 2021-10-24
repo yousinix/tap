@@ -27,4 +27,9 @@ final theme = ThemeData(
     foregroundColor: Colors.deepPurple,
     backgroundColor: Colors.transparent,
   ),
+  dialogTheme: DialogTheme(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15),
+    ),
+  ),
 );
