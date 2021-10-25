@@ -81,7 +81,12 @@ class _HomePageState extends State<HomePage> {
         final id = data.code;
         final response = await http.post(Uri.parse("${widget.url}?id=$id"));
 
-        if (response.statusCode >= 400 || response.body.contains("FAILURE")) {
+        if (response.statusCode == 302) {
+          final redirectUrl = response.headers['location']!;
+          final redirectResponse = await http.get(Uri.parse(redirectUrl));
+          if (redirectResponse.body.contains("FAILURE")) throw Error();
+        } else if (response.statusCode >= 300 ||
+            response.body.contains("FAILURE")) {
           throw Error();
         }
 
