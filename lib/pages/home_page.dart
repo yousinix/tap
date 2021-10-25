@@ -78,16 +78,25 @@ class _HomePageState extends State<HomePage> {
       try {
         controller.pauseCamera();
 
-        final id = data.code;
+        final qrData = data.code;
+        final parts = qrData.split("-");
+
+        if (parts.length != 2 && parts[0] != "ID") {
+          throw const FormatException("Unsupported QR Code format.");
+        }
+
+        final id = parts[1];
         final response = await http.post(Uri.parse("${widget.url}?id=$id"));
 
         if (response.statusCode == 302) {
           final redirectUrl = response.headers['location']!;
           final redirectResponse = await http.get(Uri.parse(redirectUrl));
-          if (redirectResponse.body.contains("FAILURE")) throw Error();
+          if (redirectResponse.body.contains("FAILURE")) {
+            throw Exception("Submission failied.");
+          }
         } else if (response.statusCode >= 300 ||
             response.body.contains("FAILURE")) {
-          throw Error();
+          throw Exception("Submission failied.");
         }
 
         await ResultDialog.showSuccess(
@@ -97,7 +106,7 @@ class _HomePageState extends State<HomePage> {
       } catch (e) {
         await ResultDialog.showError(
           context: context,
-          description: "Something went wrong.",
+          description: e.toString(),
         );
       } finally {
         controller.resumeCamera();

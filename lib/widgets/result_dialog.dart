@@ -41,7 +41,10 @@ class ResultDialog extends StatelessWidget {
                   style: Theme.of(context).textTheme.headline6,
                 ),
                 const SizedBox(height: 6),
-                Text(description),
+                Text(
+                  description,
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
           ),
