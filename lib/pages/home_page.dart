@@ -23,17 +23,6 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   late QRViewController controller;
 
-  // In order to get hot reload to work we need to pause the camera if the
-  // platform is android, or resume the camera if the platform is iOS.
-  @override
-  void reassemble() {
-    super.reassemble();
-    if (Platform.isAndroid) {
-      controller.pauseCamera();
-    }
-    controller.resumeCamera();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,24 +67,13 @@ class _HomePageState extends State<HomePage> {
       try {
         controller.pauseCamera();
 
-        final qrData = data.code;
-        final parts = qrData.split("-");
-
-        if (parts.length != 2 && parts[0] != "ID") {
+        final id = _extractId(data.code);
+        if (id == null) {
           throw const FormatException("Unsupported QR Code format.");
         }
 
-        final id = parts[1];
-        final response = await http.post(Uri.parse("${widget.url}?id=$id"));
-
-        if (response.statusCode == 302) {
-          final redirectUrl = response.headers['location']!;
-          final redirectResponse = await http.get(Uri.parse(redirectUrl));
-          if (redirectResponse.body.contains("FAILURE")) {
-            throw Exception("Submission failied.");
-          }
-        } else if (response.statusCode >= 300 ||
-            response.body.contains("FAILURE")) {
+        final isSuccess = await _submitId(id);
+        if (!isSuccess) {
           throw Exception("Submission failied.");
         }
 
@@ -112,6 +90,39 @@ class _HomePageState extends State<HomePage> {
         controller.resumeCamera();
       }
     });
+  }
+
+  String? _extractId(String code) {
+    final parts = code.split("-");
+    return parts.length != 2 || parts[0] != "ID" ? null : parts[1];
+  }
+
+  Future<bool> _submitId(String id) async {
+    final response = await http.post(Uri.parse("${widget.url}?id=$id"));
+
+    if (response.statusCode == 302) {
+      final redirectUrl = response.headers['location']!;
+      final redirectResponse = await http.get(Uri.parse(redirectUrl));
+      if (redirectResponse.body.contains("FAILURE")) {
+        return false;
+      }
+    } else if (response.statusCode >= 300 ||
+        response.body.contains("FAILURE")) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // In order to get hot reload to work we need to pause the camera if the
+  // platform is android, or resume the camera if the platform is iOS.
+  @override
+  void reassemble() {
+    super.reassemble();
+    if (Platform.isAndroid) {
+      controller.pauseCamera();
+    }
+    controller.resumeCamera();
   }
 
   @override
